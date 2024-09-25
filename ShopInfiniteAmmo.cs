@@ -1,4 +1,3 @@
-using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
@@ -11,7 +10,7 @@ namespace ShopInfiniteAmmo
         public override string ModuleName => "[SHOP] Infinite Ammo";
         public override string ModuleDescription => "";
         public override string ModuleAuthor => "E!N";
-        public override string ModuleVersion => "v1.0.0";
+        public override string ModuleVersion => "v1.0.1";
 
         private IShopApi? SHOP_API;
         private const string CategoryName = "InfiniteAmmo";
@@ -68,7 +67,7 @@ namespace ShopInfiniteAmmo
             RegisterEventHandler<EventWeaponReload>(OnWeaponReload);
         }
 
-        public void OnClientBuyItem(CCSPlayerController player, int itemId, string categoryName, string uniqueName, int buyPrice, int sellPrice, int duration, int count)
+        public HookResult OnClientBuyItem(CCSPlayerController player, int itemId, string categoryName, string uniqueName, int buyPrice, int sellPrice, int duration, int count)
         {
             if (TryGetInfiniteAmmoType(uniqueName, out int ammoType))
             {
@@ -79,9 +78,10 @@ namespace ShopInfiniteAmmo
             {
                 Logger.LogError($"{uniqueName} has invalid or missing 'ammotype' in config!");
             }
+            return HookResult.Continue;
         }
 
-        public void OnClientToggleItem(CCSPlayerController player, int itemId, string uniqueName, int state)
+        public HookResult OnClientToggleItem(CCSPlayerController player, int itemId, string uniqueName, int state)
         {
             if (state == 1 && TryGetInfiniteAmmoType(uniqueName, out int ammoType))
             {
@@ -92,11 +92,13 @@ namespace ShopInfiniteAmmo
             {
                 OnClientSellItem(player, itemId, uniqueName, 0);
             }
+            return HookResult.Continue;
         }
 
-        public void OnClientSellItem(CCSPlayerController player, int itemId, string uniqueName, int sellPrice)
+        public HookResult OnClientSellItem(CCSPlayerController player, int itemId, string uniqueName, int sellPrice)
         {
             playerInfiniteAmmos[player.Slot] = null!;
+            return HookResult.Continue;
         }
 
         private HookResult OnWeaponFire(EventWeaponFire @event, GameEventInfo info)
